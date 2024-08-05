@@ -81,6 +81,8 @@ exports.getResellerbyUserid = ErrorHandling(async (req, res) => {
 
 
 exports.createNewtokenByrefresh = ErrorHandling(async(req,res)=>{
+  let {userid} = req.query
+  const user = await userModel.findById(userid)
   const token = jwt.sign({ id: user._id }, process.env.JWT_SECRET, {
     expiresIn: "1h",
   });
