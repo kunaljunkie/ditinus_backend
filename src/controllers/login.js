@@ -2,7 +2,6 @@ const ErrorHandling = require("../servives/service");
 const userModel = require("../models/user");
 const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
-const resellerModel = require("../models/reseller")
 
 exports.login = ErrorHandling(async (req, res) => {
   const { email, password } = req.body;
@@ -16,7 +15,7 @@ exports.login = ErrorHandling(async (req, res) => {
       const refreshToken = jwt.sign({ id: user._id }, process.env.JWT_SECRET);
       res.json({
         token: token,
-        refreshToken:refreshToken,
+        refreshToken: refreshToken,
         message: "Login Successfull",
         user: user,
         reseller: user.reseller,
@@ -31,20 +30,18 @@ exports.login = ErrorHandling(async (req, res) => {
   }
 });
 
-exports.findByIduser = ErrorHandling(async(req,res)=>{
-  const {userid}  = req.query
-  if(userid){
-    const userdata = await userModel.findById(userid)
-    if(userdata){
-      res.status(200).json({data:userdata, message: `User found` });
-    } else
-    {
+exports.findByIduser = ErrorHandling(async (req, res) => {
+  const { userid } = req.query;
+  if (userid) {
+    const userdata = await userModel.findById(userid);
+    if (userdata) {
+      res.status(200).json({ data: userdata, message: `User found` });
+    } else {
       res.status(400).json({ message: `User not found` });
     }
-  }else{
-
+  } else {
   }
-})
+});
 
 exports.createuser = ErrorHandling(async (req, res) => {
   const { name, email, password, reseller } = req.body;
@@ -65,12 +62,13 @@ exports.getResellerbyUserid = ErrorHandling(async (req, res) => {
   if (userid) {
     const user = await userModel.findById(userid).populate("reseller");
     if (user) {
-        if(user.reseller){
-            res.status(200).json({ reseller: user.reseller, message: "Data found" });
-        }else{
-            const resellerData  = await resellerModel.findOne({name:process.env.DEFAULT_RESELLER})
-            res.status(200).json({ reseller: resellerData, message: "Data found" });
-        }
+      if (user.reseller) {
+        res
+          .status(200)
+          .json({ reseller: user.reseller, message: "Data found" });
+      } else {
+        res.status(200).json({ reseller: user.reseller, message: "Data found" });
+      }
     } else {
       res.status(400).json({ data: reseller, message: "user is missing" });
     }
@@ -79,10 +77,9 @@ exports.getResellerbyUserid = ErrorHandling(async (req, res) => {
   }
 });
 
-
-exports.createNewtokenByrefresh = ErrorHandling(async(req,res)=>{
-  let {userid} = req.query
-  const user = await userModel.findById(userid)
+exports.createNewtokenByrefresh = ErrorHandling(async (req, res) => {
+  let { userid } = req.query;
+  const user = await userModel.findById(userid);
   const token = jwt.sign({ id: user._id }, process.env.JWT_SECRET, {
     expiresIn: "1h",
   });
@@ -90,4 +87,4 @@ exports.createNewtokenByrefresh = ErrorHandling(async(req,res)=>{
     token: token,
     message: "new session successfull",
   });
-})
+});
