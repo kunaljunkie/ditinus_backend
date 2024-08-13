@@ -38,6 +38,9 @@ app.use(`/admin/v1`, admin);
 app.get("/health", async (req, res) => {
   res.status(200).send("server running");
 });
+app.get("/", async (req, res) => {
+  res.status(200).send("server running");
+});
 
 if (cluster.isMaster) {
   for (let i = 0; i < numCPUs; i++) {
