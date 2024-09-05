@@ -9,16 +9,16 @@ const objectIdValidator = (value, helpers) => {
 };
 
 const querySchema = Joi.object({
-  userid: Joi.string()
-    .custom(objectIdValidator, "ObjectId validation")
-    .required(),
+  name: Joi.string().required(),
   page: Joi.number().integer().min(1).default(1),
   limit: Joi.number().integer().min(1).max(100).default(10),
 });
 
-const userSchema = Joi.object({
-  email: Joi.string().email().required(),
-  password: Joi.string().min(6).required(),
+const querySchemaforCode = Joi.object({
+  country_code: Joi.string().required(),
+  page: Joi.number().integer().min(1).default(1),
+  limit: Joi.number().integer().min(1).max(100).default(10),
 });
 
-module.exports = { querySchema, userSchema };
+
+module.exports = { querySchema,querySchemaforCode };

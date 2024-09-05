@@ -6,11 +6,8 @@ const logger = require("./src/servives/logging");
 const MongoDB = require("./src/db/mongo");
 require("dotenv").config();
 const rateLimit = require("express-rate-limit");
-const cluster = require("cluster");
 const helmet = require("helmet");
-const admin = require("./src/routes/adminRoutes");
-
-const numCPUs = require("os").cpus().length;
+const { getCountrieslist } = require("./src/servives/countries");
 
 const limiter = rateLimit({
   windowMs: 10 * 1000,
@@ -19,11 +16,13 @@ const limiter = rateLimit({
 });
 
 // app.use(limiter);
-app.use(cors()); // TODO : use cors Options
-// app.use(helmet.xssFilter());
+app.use(cors());
+app.use(helmet.xssFilter());
 app.use((req, res, next) => {
-  res.setHeader("Content-Security-Policy", "default-src 'self'");
-  res.setHeader("Strict-Transport-Security", "max-age=31536000");
+  res.setHeader('Access-Control-Allow-Origin', '*');
+  res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE');
+  res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
+  res.setHeader('Access-Control-Allow-Credentials', true);
   next();
 });
 app.use(express.json());
@@ -32,8 +31,7 @@ app.use((req, res, next) => {
   next();
 });
 
-app.use(`/api/v1`, routes);
-app.use(`/admin/v1`, admin);
+app.use(`/api`, routes);
 
 app.get("/health", async (req, res) => {
   res.status(200).send("server running");
@@ -41,28 +39,18 @@ app.get("/health", async (req, res) => {
 app.get("/", async (req, res) => {
   res.status(200).send("server running");
 });
-
-if (cluster.isMaster) {
-  for (let i = 0; i < numCPUs; i++) {
-    cluster.fork();
-  }
-  cluster.on("exit", (worker, code, signal) => {
-    cluster.fork();
-  });
-} else {
+MongoDB.connect()
+.then(() => {
+    getCountrieslist()
+})
+.catch((err) => {
+  console.log("DATABASE CONNECTING ERROR", err);
+});
   app
     .listen(process.env.PORT, () => {
       console.log(`Server Listning on: ${process.env.PORT}`);
     })
-    .on("listening", () => {
-      MongoDB.connect()
-        .then(() => {
-          console.log(
-            `Server Running on: http://localhost:${process.env.PORT}/health`
-          );
-        })
-        .catch((err) => {
-          console.log("DATABASE CONNECTING ERROR", err);
-        });
-    });
-}
+
+
+
+
